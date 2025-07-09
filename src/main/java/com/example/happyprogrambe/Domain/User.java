@@ -59,4 +59,8 @@ public class User {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Statistic statistic;
+
+    @ManyToOne
+    @JoinColumn(name = "roleID", nullable = false)
+    private Role role;
 }
