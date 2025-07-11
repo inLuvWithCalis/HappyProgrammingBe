@@ -8,28 +8,29 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "comments")
+@Table(name = "Comments")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Comment {
+public class Comments {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "commentID", length = 10)
-    private String id;
+    @Column(name = "commentId", length = 20)
+    private String commentId;
 
     @ManyToOne
-    @JoinColumn(name = "menteeID")
+    @JoinColumn(name = "menteeId")
     private User mentee;
 
     @ManyToOne
-    @JoinColumn(name = "mentorID")
-    private MentorDetail mentor;
+    @JoinColumn(name = "mentorId")
+    private MentorDetails mentor;
 
+    @Column(name = "rate")
     private Integer rate;
 
     @Column(name = "comments", length = 1500)
-    private String content;
+    private String comments;
 
+    @Column(name = "timestamp")
     private LocalDateTime timestamp;
 }

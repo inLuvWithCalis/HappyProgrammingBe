@@ -8,27 +8,42 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "statistics")
+@Table(name = "Statistic")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Statistic {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "userId", length = 36)
-    private String id;
+    @Column(name = "userId", length = 20)
+    private String userId;
 
     @OneToOne
-    @JoinColumn(name = "userId", referencedColumnName = "userID")
+    @JoinColumn(name = "userId")
+    @MapsId
     private User user;
 
-    @Column(length = 20)
-    private String role;
+    @Column(name = "roleId", length = 10)
+    private String roleId;
 
-    private Integer totalRequests;
-    private Integer completedRequests;
-    private Integer canceledRequests;
-    private Double avgRate;
-    private Integer followerCount;
+    @Column(name = "totalRequests")
+    private Integer totalRequests = 0;
+
+    @Column(name = "completedRequests")
+    private Integer completedRequests = 0;
+
+    @Column(name = "canceledRequests")
+    private Integer canceledRequests = 0;
+
+    @Column(name = "avgRate")
+    private Double avgRate = 0.0;
+
+    @Column(name = "followerCount")
+    private Integer followerCount = 0;
+
+    @Column(name = "lastUpdated")
     private LocalDateTime lastUpdated;
+
+    @ManyToOne
+    @JoinColumn(name = "roleId", insertable = false, updatable = false)
+    private Role role;
 }

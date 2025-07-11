@@ -2,65 +2,98 @@ package com.example.happyprogrambe.Domain;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 
 @Entity
-@Table(name = "users")
+@Table(name = "Users")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class User implements UserDetails {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "userID", length = 36)
-    private String id;
+    @Column(name = "userId", length = 20)
+    private String userId;
 
-    @Column(length = 20)
+    @Column(name = "username", nullable = false, length = 20)
     private String username;
 
-    @Column(length = 255)
+    @Column(name = "email", nullable = false, length = 255)
     private String email;
 
-    @Column(length = 50)
+    @Column(name = "fullname", nullable = false, length = 50)
     private String fullname;
 
-    @Column(length = 20)
+    @Column(name = "password", nullable = false, length = 255)
     private String password;
 
-    @Column(length = 10)
+    @Column(name = "phone", length = 10)
     private String phone;
 
+    @Column(name = "address", length = 255)
     private String address;
+
+    @Column(name = "dob")
     private LocalDate dob;
 
-    @Column(length = 1)
-    private String sex;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "sex")
+    private Gender sex;
 
+    @Column(name = "image", length = 255)
     private String image;
-    private Boolean status;
-    private Boolean emailStatus;
 
-    // Relationships
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private MentorDetail mentorDetail;
+    @Column(name = "status", nullable = false)
+    private Boolean status = true;
 
-    @OneToMany(mappedBy = "mentee", cascade = CascadeType.ALL)
-    private List<Request> requests;
+    @Column(name = "emailStatus", nullable = false)
+    private Boolean emailStatus = false;
 
-    @OneToMany(mappedBy = "mentee", cascade = CascadeType.ALL)
-    private List<Comment> comments;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "roleId", nullable = false)
+    private Role role;
 
-    @OneToMany(mappedBy = "mentee", cascade = CascadeType.ALL)
-    private List<Follower> following;
+    @OneToOne(mappedBy = "mentor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private MentorDetails mentorDetails;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Statistic statistic;
 
-    @ManyToOne
-    @JoinColumn(name = "roleID", nullable = false)
-    private Role role;
+    public enum Gender {
+        M, F, O
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.getRoleName().toUpperCase()));
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return status != null && status;
+    }
 }
