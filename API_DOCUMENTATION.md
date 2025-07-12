@@ -25,7 +25,9 @@ Base URL: `http://localhost:8080`
   "dob": "date (optional, format: YYYY-MM-DD)",
   "sex": "enum (optional, M/F/O)",
   
-  // Chỉ áp dụng cho Mentor (roleId = R002)
+  "Chỉ áp dụng cho Mentor (roleId = R002)": "bên dưới",
+  
+  
   "facebook": "string (optional)",
   "github": "string (optional)",
   "profession": "string (optional)",
