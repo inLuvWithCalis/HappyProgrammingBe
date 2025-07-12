@@ -1,17 +1,22 @@
 package com.example.happyprogrambe.Service;
 
 import com.example.happyprogrambe.Domain.*;
+import com.example.happyprogrambe.Dto.Request.LogoutRequest;
 import com.example.happyprogrambe.Dto.Request.SignInRequest;
 import com.example.happyprogrambe.Dto.Request.SignUpRequest;
 import com.example.happyprogrambe.Dto.Response.AuthResponse;
+import com.example.happyprogrambe.Dto.Response.LogoutResponse;
 import com.example.happyprogrambe.Repository.MentorDetailsRepository;
 import com.example.happyprogrambe.Repository.RoleRepository;
 import com.example.happyprogrambe.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -32,6 +37,9 @@ public class AuthService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private SecurityContextRepository securityContextRepository;
 
     @Transactional
     public AuthResponse signUp(SignUpRequest request) {
@@ -78,8 +86,9 @@ public class AuthService {
         return mapToAuthResponse(user);
     }
 
-    public AuthResponse signIn(SignInRequest request) {
-        User user = userRepository.findByUsername(request.getUsername()).orElseThrow(() -> new RuntimeException("Invalid username or password"));
+    public AuthResponse signIn(SignInRequest request, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+        User user = userRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new RuntimeException("Invalid username or password"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new RuntimeException("Invalid username or password");
@@ -89,7 +98,42 @@ public class AuthService {
             throw new RuntimeException("Account is disabled");
         }
 
+        // Create authentication token and set it in SecurityContext
+        org.springframework.security.authentication.UsernamePasswordAuthenticationToken authToken =
+                new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                        user.getUsername(), null, java.util.Collections.emptyList());
+
+        org.springframework.security.core.context.SecurityContext context =
+                org.springframework.security.core.context.SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authToken);
+        org.springframework.security.core.context.SecurityContextHolder.setContext(context);
+
+        // Save SecurityContext to session
+        securityContextRepository.saveContext(context, httpRequest, httpResponse);
+
         return mapToAuthResponse(user);
+    }
+
+    public LogoutResponse logout(LogoutRequest request, HttpServletRequest httpRequest) {
+        try {
+            // Validate user exists
+            User user = userRepository.findById(request.getUserId())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            // Clear SecurityContext
+            org.springframework.security.core.context.SecurityContextHolder.clearContext();
+
+            // Create logout response
+            LogoutResponse response = new LogoutResponse();
+            response.setUserId(user.getUserId());
+            response.setUsername(user.getUsername());
+            response.setMessage("Logout successful");
+            response.setLogoutTime(LocalDateTime.now().toString());
+
+            return response;
+        } catch (Exception e) {
+            throw new RuntimeException("Logout failed: " + e.getMessage());
+        }
     }
 
     private AuthResponse mapToAuthResponse(User user) {
