@@ -2,6 +2,7 @@ package com.example.happyprogrambe.Service;
 
 import com.example.happyprogrambe.Repository.UserRepository;
 import com.example.happyprogrambe.Repository.MentorDetailsRepository;
+import com.example.happyprogrambe.Repository.RequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +14,9 @@ public class IdGeneratorService {
 
     @Autowired
     private MentorDetailsRepository mentorDetailsRepository;
+
+    @Autowired
+    private RequestRepository requestRepository;
 
     public String generateUserId() {
         // Lấy ID cao nhất hiện tại và tăng lên 1
@@ -40,8 +44,13 @@ public class IdGeneratorService {
     }
 
     public String generateRequestId() {
-        long count = System.currentTimeMillis() % 1000;
-        return String.format("REQ%03d", count + 1);
+        // Lấy ID cao nhất hiện tại và tăng lên 1
+        String lastRequestId = requestRepository.findTopByOrderByRequestIdDesc()
+                .map(request -> request.getRequestId())
+                .orElse("REQ000");
+
+        int nextNumber = Integer.parseInt(lastRequestId.substring(3)) + 1;
+        return String.format("REQ%03d", nextNumber);
     }
 
     public String generateCommentId() {

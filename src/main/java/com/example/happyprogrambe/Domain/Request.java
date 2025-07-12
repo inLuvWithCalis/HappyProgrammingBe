@@ -17,16 +17,16 @@ public class Request {
     @Column(name = "requestId", length = 25)
     private String requestId;
 
-    @ManyToOne
-    @JoinColumn(name = "menteeId")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "menteeId", referencedColumnName = "userId")
     private User mentee;
 
-    @ManyToOne
-    @JoinColumn(name = "mentorId")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "mentorId", referencedColumnName = "mentorId")
     private MentorDetails mentor;
 
-    @ManyToOne
-    @JoinColumn(name = "skillId")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "skillId", referencedColumnName = "skillId")
     private Skills skill;
 
     @Column(name = "deadline")
@@ -35,7 +35,7 @@ public class Request {
     @Column(name = "title", length = 255)
     private String title;
 
-    @Column(name = "reqContent", length = 255)
+    @Column(name = "reqContent", length = 1000, columnDefinition = "VARCHAR(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
     private String reqContent;
 
     @Column(name = "status", length = 1)
